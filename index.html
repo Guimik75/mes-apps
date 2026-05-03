@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Guillaume Apps">
+<title>Mes Apps</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080810; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 20px; font-family: 'DM Mono', monospace; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.2rem; color: #6a8acc; letter-spacing: -0.02em; margin-bottom: 6px; text-align: center; }
+  .sub { font-size: 0.6rem; color: #3a4a6a; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin-bottom: 40px; }
+  .apps { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; }
+  .app-link { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 14px; border: 1px solid; text-decoration: none; transition: opacity 0.15s; }
+  .app-link:active { opacity: 0.8; }
+  .app-icon { font-size: 1.8rem; width: 48px; text-align: center; }
+  .app-info {}
+  .app-name { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; }
+  .app-desc { font-size: 0.62rem; margin-top: 3px; }
+</style>
+</head>
+<body>
+  <h1>Guillaume — Mes Apps</h1>
+  <div class="sub">Raccourcis iPhone</div>
+  <div class="apps">
+    <a class="app-link" href="habit-tracker.html" style="background:#1a1510;border-color:#2e2820">
+      <div class="app-icon">🏃</div>
+      <div class="app-info">
+        <div class="app-name" style="color:#c8a84b">Tracker Corps</div>
+        <div class="app-desc" style="color:#5a4a35">Habitudes · Poids · Score quotidien</div>
+      </div>
+    </a>
+    <a class="app-link" href="meal-composer.html" style="background:#0d100d;border-color:#253025">
+      <div class="app-icon">🍽️</div>
+      <div class="app-info">
+        <div class="app-name" style="color:#6aaa6a">Composer un Repas</div>
+        <div class="app-desc" style="color:#3a5a3a">Assiette · Journal · Hydratation</div>
+      </div>
+    </a>
+    <a class="app-link" href="projects.html" style="background:#0a0c12;border-color:#1e2638">
+      <div class="app-icon">🎬</div>
+      <div class="app-info">
+        <div class="app-name" style="color:#8aaaee">Mes Projets</div>
+        <div class="app-desc" style="color:#3a4a6a">Réplica · La Cellule · Ardashok…</div>
+      </div>
+    </a>
+  </div>
+</body>
+</html>
