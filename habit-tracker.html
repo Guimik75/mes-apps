@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tracker">
+<title>Tracker Corps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0d0a;
+    --bg2: #1a1510;
+    --bg3: #211d16;
+    --border: #2e2820;
+    --gold: #c8a84b;
+    --gold2: #e8c86a;
+    --text: #e8dcc8;
+    --muted: #7a6a55;
+    --green: #5a8a5a;
+    --red: #8a4a3a;
+    --blue: #4a6a8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; max-width: 430px; margin: 0 auto; padding-bottom: 80px; }
+  
+  header { padding: 20px 20px 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
+  .header-row { display: flex; justify-content: space-between; align-items: baseline; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.4rem; color: var(--gold2); letter-spacing: -0.02em; }
+  .day-label { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
+  .streak { font-size: 0.7rem; color: var(--gold); }
+  
+  nav { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 72px; z-index: 9; }
+  nav button { flex: 1; padding: 12px 8px; background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; }
+  nav button.active { color: var(--gold2); border-bottom-color: var(--gold); }
+  
+  .tab { display: none; padding: 20px; }
+  .tab.active { display: block; }
+  
+  /* SCORE */
+  .score-ring-wrap { text-align: center; padding: 28px 0 20px; }
+  .score-ring { width: 130px; height: 130px; margin: 0 auto; position: relative; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-circle-bg { fill: none; stroke: var(--bg3); stroke-width: 8; }
+  .score-circle { fill: none; stroke: var(--gold); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+  .score-num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .score-pts { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 700; color: var(--gold2); line-height: 1; }
+  .score-label { font-size: 0.55rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 3px; }
+  .motivation { text-align: center; font-family: 'Fraunces', serif; font-style: italic; font-size: 0.85rem; color: var(--muted); padding: 0 30px 20px; line-height: 1.5; }
+  
+  /* HABITS */
+  .habit-list { display: flex; flex-direction: column; gap: 8px; }
+  .habit-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.15s; user-select: none; }
+  .habit-item.done { border-color: var(--gold); background: #1e1a10; }
+  .habit-check { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; font-size: 12px; }
+  .habit-item.done .habit-check { background: var(--gold); border-color: var(--gold); }
+  .habit-emoji { font-size: 1.1rem; width: 24px; text-align: center; }
+  .habit-info { flex: 1; }
+  .habit-name { font-size: 0.82rem; color: var(--text); }
+  .habit-item.done .habit-name { color: var(--muted); }
+  .habit-pts { font-size: 0.6rem; color: var(--muted); margin-top: 2px; letter-spacing: 0.1em; }
+  
+  /* WEIGHT */
+  .weight-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .wc-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
+  .weight-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .wstat { text-align: center; }
+  .wstat-val { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: var(--gold2); }
+  .wstat-sub { font-size: 0.58rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+  .progress-bar { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 3px; transition: width 0.5s ease; }
+  .progress-label { font-size: 0.6rem; color: var(--muted); text-align: right; }
+  .weight-input-row { display: flex; gap: 10px; margin-top: 14px; }
+  .weight-input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.9rem; outline: none; }
+  .weight-input:focus { border-color: var(--gold); }
+  .weight-btn { background: var(--gold); color: var(--bg); border: none; border-radius: 8px; padding: 10px 18px; font-family: 'DM Mono', monospace; font-size: 0.75rem; font-weight: 500; cursor: pointer; letter-spacing: 0.08em; }
+  
+  /* HISTORY */
+  .week-bars { display: flex; gap: 6px; margin-bottom: 20px; }
+  .week-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .bar-track { width: 100%; height: 60px; background: var(--bg3); border-radius: 4px; position: relative; overflow: hidden; }
+  .bar-fill { position: absolute; bottom: 0; width: 100%; border-radius: 4px 4px 0 0; transition: height 0.4s ease; }
+  .bar-day { font-size: 0.58rem; color: var(--muted); letter-spacing: 0.05em; }
+  .bar-score { font-size: 0.62rem; color: var(--text); }
+  
+  .history-list { display: flex; flex-direction: column; gap: 6px; }
+  .history-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; }
+  .history-date { font-size: 0.72rem; color: var(--muted); }
+  .history-score { font-size: 0.8rem; color: var(--gold); font-weight: 500; }
+  .history-habits { font-size: 0.65rem; color: var(--muted); }
+  
+  .section-title { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 12px; }
+  
+  /* Weight chart */
+  .weight-chart { height: 80px; position: relative; margin: 10px 0 4px; }
+  .weight-chart svg { width: 100%; height: 100%; }
+  
+  .empty-state { text-align: center; padding: 30px; color: var(--muted); font-size: 0.8rem; line-height: 1.7; font-family: 'Fraunces', serif; font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <h1>Tracker Corps</h1>
+      <div class="day-label" id="dayLabel"></div>
+    </div>
+    <div class="streak" id="streakLabel"></div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('today')">Aujourd'hui</button>
+  <button onclick="showTab('weight')">Poids</button>
+  <button onclick="showTab('history')">Historique</button>
+</nav>
+
+<div class="tab active" id="tab-today">
+  <div class="score-ring-wrap">
+    <div class="score-ring">
+      <svg viewBox="0 0 120 120" width="130" height="130">
+        <circle class="score-circle-bg" cx="60" cy="60" r="52"/>
+        <circle class="score-circle" id="scoreCircle" cx="60" cy="60" r="52" stroke-dasharray="327" stroke-dashoffset="327"/>
+      </svg>
+      <div class="score-num">
+        <div class="score-pts" id="scoreNum">0</div>
+        <div class="score-label">points</div>
+      </div>
+    </div>
+  </div>
+  <div class="motivation" id="motivText"></div>
+  
+  <div class="section-title">Habitudes du jour</div>
+  <div class="habit-list" id="habitList"></div>
+</div>
+
+<div class="tab" id="tab-weight">
+  <div class="weight-card">
+    <div class="wc-label">Objectif poids</div>
+    <div class="weight-stats">
+      <div class="wstat">
+        <div class="wstat-val" id="wCurrent">—</div>
+        <div class="wstat-sub">actuel</div>
+      </div>
+      <div class="wstat">
+        <div class="wstat-val" id="wLost">—</div>
+        <div class="wstat-sub">perdu</div>
+      </div>
+      <div class="wstat">
+        <div class="wstat-val" id="wRemain">—</div>
+        <div class="wstat-sub">restant</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="wProgress" style="width:0%"></div></div>
+    <div class="progress-label" id="wProgressLabel">74.7 kg → 71.5 kg</div>
+    <div class="weight-chart"><svg id="weightChart"></svg></div>
+    <div class="weight-input-row">
+      <input class="weight-input" id="weightInput" type="number" step="0.1" min="50" max="120" placeholder="kg aujourd'hui">
+      <button class="weight-btn" onclick="addWeight()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="tab" id="tab-history">
+  <div class="section-title" style="margin-bottom:16px">7 derniers jours</div>
+  <div class="week-bars" id="weekBars"></div>
+  <div class="section-title">Journal</div>
+  <div class="history-list" id="historyList"></div>
+</div>
+
+<script>
+const GOAL = 71.5, START = 74.7;
+const DAYS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const MONTHS = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+
+const HABITS = [
+  { id: 'sleep',      emoji: '🌙', label: '7h30+ de sommeil',        pts: 20 },
+  { id: 'water',      emoji: '💧', label: '1,5 L d\'eau',             pts: 15 },
+  { id: 'steps',      emoji: '👟', label: '8 000 pas',                pts: 15 },
+  { id: 'nosugar',    emoji: '🚫', label: 'Zéro sucre liquide',       pts: 20 },
+  { id: 'protein',    emoji: '🥚', label: 'Protéines le matin',       pts: 15 },
+  { id: 'nofeculent', emoji: '🍽️', label: 'Pas de féculents le soir', pts: 15 },
+];
+
+const motivations = [
+  [80, "Journée parfaite. Tu prouve quelque chose."],
+  [60, "Solide. Le cap tient."],
+  [40, "Encore mieux demain."],
+  [0,  "Chaque journée est un nouveau départ."],
+];
+
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function load(key, def) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? def; } catch { return def; }
+}
+function save(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+let habitHistory = load('gh_habits', {});
+let weights = load('gh_weights', []);
+let todayHabits = habitHistory[today()] || {};
+
+function saveHabits() {
+  habitHistory[today()] = todayHabits;
+  save('gh_habits', habitHistory);
+}
+
+function calcScore(h) {
+  return HABITS.reduce((s, hab) => s + (h[hab.id] ? hab.pts : 0), 0);
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'history') renderHistory();
+  if (name === 'weight') renderWeight();
+}
+
+function renderHeader() {
+  const d = new Date();
+  const label = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+  document.getElementById('dayLabel').textContent = label;
+  let streak = 0, dt = new Date();
+  while(true) {
+    dt.setDate(dt.getDate() - 1);
+    const key = dt.toISOString().split('T')[0];
+    if (!habitHistory[key] || calcScore(habitHistory[key]) < 40) break;
+    streak++;
+  }
+  document.getElementById('streakLabel').textContent = streak > 0 ? '🔥 ' + streak + 'j' : '';
+}
+
+function renderToday() {
+  const score = calcScore(todayHabits);
+  const maxLen = 327;
+  const pct = score / 100;
+  const offset = maxLen - pct * maxLen;
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreCircle').style.strokeDashoffset = offset;
+  const color = score >= 80 ? '#c8a84b' : score >= 60 ? '#5a8a5a' : score >= 40 ? '#4a6a8a' : '#6a5a4a';
+  document.getElementById('scoreCircle').style.stroke = color;
+  const mot = motivations.find(([min]) => score >= min);
+  document.getElementById('motivText').textContent = mot ? mot[1] : '';
+  const list = document.getElementById('habitList');
+  list.innerHTML = HABITS.map(h => `<div class="habit-item ${todayHabits[h.id] ? 'done' : ''}" onclick="toggleHabit('${h.id}')"><div class="habit-check">${todayHabits[h.id] ? '✓' : ''}</div><div class="habit-emoji">${h.emoji}</div><div class="habit-info"><div class="habit-name">${h.label}</div><div class="habit-pts">+${h.pts} pts</div></div></div>`).join('');
+}
+
+function toggleHabit(id) { todayHabits[id] = !todayHabits[id]; saveHabits(); renderToday(); }
+
+function renderWeight() {
+  const latest = weights.length ? weights[weights.length-1].weight : START;
+  const lost = (START - latest).toFixed(1);
+  const remain = (latest - GOAL).toFixed(1);
+  const pct = Math.min(100, Math.max(0, ((START - latest) / (START - GOAL)) * 100)).toFixed(0);
+  document.getElementById('wCurrent').textContent = latest + ' kg';
+  document.getElementById('wLost').textContent = (lost > 0 ? '−' : '+') + Math.abs(lost) + ' kg';
+  document.getElementById('wRemain').textContent = remain > 0 ? remain + ' kg' : '✓';
+  document.getElementById('wProgress').style.width = pct + '%';
+  document.getElementById('wProgressLabel').textContent = pct + '% de l\'objectif atteint';
+  const svg = document.getElementById('weightChart');
+  if (weights.length < 2) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#4a3a2a" font-size="11">Pas encore assez de données</text>'; return; }
+  const W = svg.clientWidth || 300, H = 80;
+  const vals = weights.map(w => w.weight);
+  const min = Math.min(...vals) - 0.5, max = Math.max(...vals) + 0.5;
+  const pts = weights.map((w, i) => { const x = (i / (weights.length - 1)) * W; const y = H - ((w.weight - min) / (max - min)) * (H - 10) - 5; return `${x},${y}`; });
+  svg.innerHTML = `<polyline points="${pts.join(' ')}" fill="none" stroke="#c8a84b" stroke-width="2"/>${weights.map((w,i) => { const x = (i/(weights.length-1))*W, y=H-((w.weight-min)/(max-min))*(H-10)-5; return `<circle cx="${x}" cy="${y}" r="3" fill="#c8a84b"/>`; }).join('')}<line x1="0" y1="${H-((GOAL-min)/(max-min))*(H-10)-5}" x2="${W}" y2="${H-((GOAL-min)/(max-min))*(H-10)-5}" stroke="#5a8a5a" stroke-width="1" stroke-dasharray="4"/>`;
+}
+
+function addWeight() { const v = parseFloat(document.getElementById('weightInput').value); if (isNaN(v) || v < 50 || v > 120) return; const entry = { date: today(), weight: v }; weights = [...weights.filter(w => w.date !== today()), entry].sort((a,b) => a.date.localeCompare(b.date)); save('gh_weights', weights); document.getElementById('weightInput').value = ''; renderWeight(); }
+
+function renderHistory() {
+  const bars = document.getElementById('weekBars');
+  const list = document.getElementById('historyList');
+  const days7 = [];
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().split('T')[0]; const score = calcScore(habitHistory[key] || {}); days7.push({ key, score, day: DAYSAd.getDay()] }); }
+  bars.innerHTML = days7.map(({score, day}) => { const h = Math.max(4, score * 0.6); const color = score >= 80 ? '#c8a84b' : score >= 60 ? '#5a8a5a' : score >= 40 ? '#4a6a8a' : '#3a2e22'; return `<div class="week-bar"><div class="bar-score">${score || ''}</div><div class="bar-track"><div class="bar-fill" style="height:${h}px;background:${color}"></div></div><div class="bar-day">${day}</div></div>`; }).join('');
+  const allDays = Object.entries(habitHistory).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 30);
+  if (!allDays.length) { list.innerHTML = '<div class="empty-state">Aucun historique encore.<br>Commence � cocher tes habitudes.</div>'; return; }
+  list.innerHTML = allDays.map(([date, h]) => { const score = calcScore(h); const d = new Date(date + 'T12:00'); const label = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; const done = HABITS.filter(hab => h[hab.id]).map(hab => hab.emoji).join(''); return `<div class="history-row"><div><div class="history-date">${label}</div><div class="history-habits">${done || '—'}</div></div><div class="history-score">${score} pts</div></div>`; }).join('');
+}
+
+renderHeader();
+renderToday();
+</script>
+</body>
+</html>
