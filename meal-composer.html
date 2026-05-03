@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Repas">
+<title>Composer un Repas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d100d;
+    --bg2: #141a14;
+    --bg3: #1c241c;
+    --border: #253025;
+    --green: #6aaa6a;
+    --green2: #8acc8a;
+    --text: #d8e8d8;
+    --muted: #5a7a5a;
+    --red: #aa5a5a;
+    --amber: #c8a84b;
+    --blue: #5a7aaa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; max-width: 430px; margin: 0 auto; }
+
+  header { padding: 18px 20px 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.35rem; color: var(--green2); letter-spacing: -0.02em; }
+  .header-sub { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
+
+  nav { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 68px; z-index: 9; }
+  nav button { flex: 1; padding: 11px 4px; background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  nav button.active { color: var(--green2); border-bottom-color: var(--green); }
+
+  .tab { display: none; padding: 16px 16px 90px; }
+  .tab.active { display: block; }
+
+  .meal-type-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .meal-type-btn { flex: 1; padding: 8px 4px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.62rem; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .meal-type-btn.active { background: var(--bg2); border-color: var(--green); color: var(--green2); }
+
+  .plate { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 14px; min-height: 80px; }
+  .plate-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .plate-label { font-size: 0.58rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+  .plate-clear { background: none; border: none; color: var(--muted); font-size: 0.62rem; cursor: pointer; font-family: 'DM Mono', monospace; padding: 0; }
+  .plate-items { display: flex; flex-wrap: wrap; gap: 6px; }
+  .plate-item { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; border: 1px solid; cursor: pointer; }
+
+  .balance-wrap { margin-bottom: 14px; }
+  .balance-label { font-size: 0.58rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .balance-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; }
+  .balance-seg { height: 100%; border-radius: 2px; transition: flex 0.4s ease; }
+  .balance-note { font-size: 0.62rem; color: var(--muted); margin-top: 5px; }
+
+  .cat-section { margin-bottom: 14px; }
+  .cat-title { font-size: 0.58rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+  .food-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .food-btn { padding: 10px 6px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.15s; user-select: none; }
+  .food-btn.in-plate { border-color: var(--green); background: var(--bg2); }
+  .food-emoji { font-size: 1.3rem; display: block; margin-bottom: 4px; }
+  .food-name { font-size: 0.6rem; color: var(--text); line-height: 1.3; }
+
+  .save-btn { width: 100%; padding: 14px; background: var(--green); color: var(--bg); border: none; border-radius: 10px; font-family: 'DM Mono', monospace; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em; cursor: pointer; margin-bottom: 16px; }
+
+  .log-day { margin-bottom: 20px; }
+  .log-day-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
+  .log-meal { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 6px; position: relative; }
+  .log-meal-type { font-size: 0.62rem; color: var(--green); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+  .log-meal-items { font-size: 0.75rem; color: var(--text); line-height: 1.6; }
+  .log-meal-del { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--muted); font-size: 0.9rem; cursor: pointer; }
+
+  .empty-log { text-align: center; padding: 40px 20px; color: var(--muted); font-family: 'Fraunces', serif; font-style: italic; font-size: 0.85rem; line-height: 1.7; }
+
+  .water-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .water-label { font-size: 0.58rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .water-count { font-size: 1.1rem; color: var(--blue); }
+  .water-glasses { display: flex; gap: 8px; flex-wrap: wrap; }
+  .water-glass { font-size: 1.5rem; cursor: pointer; filter: grayscale(1); opacity: 0.4; transition: all 0.2s; }
+  .water-glass.filled { filter: none; opacity: 1; }
+  .water-target { font-size: 0.62rem; color: var(--muted); margin-top: 10px; }
+
+  .assess { display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 0.6rem; margin-left: 8px; }
+  .assess.good { background: #1a3a1a; color: var(--green2); }
+  .assess.warn { background: #3a3010; color: var(--amber); }
+  .assess.bad  { background: #3a1a1a; color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Composer un Repas</h1>
+  <div class="header-sub" id="dateLabel"></div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('compose')">Composer</button>
+  <button onclick="showTab('journal')">Journal</button>
+  <button onclick="showTab('water')">Eau</button>
+</nav>
+
+<div class="tab active" id="tab-compose">
+  <div class="meal-type-row">
+    <button class="meal-type-btn active" onclick="setMealType('Petit-déj', this)">🌅 Matin</button>
+    <button class="meal-type-btn" onclick="setMealType('Déjeuner', this)">☀️ Midi</button>
+    <button class="meal-type-btn" onclick="setMealType('Dîner', this)">🌙 Soir</button>
+    <button class="meal-type-btn" onclick="setMealType('Collation', this)">🍎 Collation</button>
+  </div>
+
+  <div class="plate">
+    <div class="plate-header"><div class="plate-label">Mon assiette</div><button class="plate-clear" onclick="clearPlate()">tout vider</button></div>
+    <div class="plate-items" id="plateItems"><span style="font-size:0.72rem;color:var(--muted);font-style:italic">Appuie sur un aliment pour l'ajouter…</span></div>
+  </div>
+
+  <div class="balance-wrap">
+    <div class="balance-label"><span>É�uilibre assiette</span><span id="balanceAssess"></span></div>
+    <div class="balance-bar">
+      <div class="balance-seg" id="barProt" style="background:#6aaa6a;flex:0"></div>
+      <div class="balance-seg" id="barVeg" style="background:#4a8a9a;flex:0"></div>
+      <div class="balance-seg" id="barFec" style="background:#c8a84b;flex:0"></div>
+      <div class="balance-seg" id="barFat" style="background:#aa7a4a;flex:0"></div>
+    </div>
+    <div class="balance-note" id="balanceNote">Ajoute des aliments pour voir l'équilibre</div>
+  </div>
+
+  <button class="save-btn" onclick="saveMeal()">✓ Enregistrer ce repas</button>
+  <div id="foodCats"></div>
+</div>
+
+<div class="tab" id="tab-journal"><div id="journalContent"></div></div>
+<div class="tab" id="tab-water">
+  <div class="water-section">
+    <div class="water-label"><span>Hydratation du jour</span><span class="water-count"><span id="waterCount">0</span>/8 verres</span></div>
+    <div class="water-glasses" id="waterGlasses"></div>
+    <div class="water-target" id="waterTarget">Objectif : 8 verres = 1,6 L · Appuie pour cocher</div>
+  </div>
+  <div style="font-size:0.72rem;color:var(--muted);line-height:1.8;padding:4px 0">
+    <strong style="color:var(--text);display:block;margin-bottom:6px;font-size:0.65rem;text-transform:uppercase">Rappels</strong>
+    🌅 1 grand verre au réveil<br>☫ Alterncr café et eau le matin<br>🍽️ 1 verre avant chaque repas<br>🌙 Arrêter 1h avant de dormir
+  </div>
+</div>
+
+<script>
+const FOODS = [
+  { id:'egg',emoji:'🥚', name:'Śufs',cat:'prot',type:'prot',pts:3},
+  { id:'chicken',emoji:'🍗', name:'Poulet',cat:'prot',type:'prot',pts:3},
+  { id:'fish',emoji:'🐟', name:'Poisson',cat:'prot',type:'prot',pts:3},
+  { id:'tuna',emoji:'🐠', name:'Thon',cat:'prot',type:'prot',pts:2},
+  { id:'tofu',emoji:'🫘',name:'Tofu/Légum.',cat:'prot',type:'prot',pts:2},
+  { id:'yogurt',emoji:'🥛',name:'Yaourt grec',cat:'prot',type:'prot',pts:3},
+  { id:'salmon',emoji:'🍣',name:'Saumon',cat:'prot',type:'prot',pts:3},
+  { id:'beef',emoji:'🥩',name:'Bœuf maigre',cat:'prot',type:'prot',pts:3},
+  { id:'cheese',emoji:'🥀',name:'Fromage',cat:'prot',type:'prot',pts:1},
+  { id:'salad',emoji:'🥗n',name:'Salade',cat:'veg',type:'veg'(pts:2},
+  { id:'tomato',emoji:'🍅',name:'Tomate',cat:'veg',type:'veg'(pts:2},
+  { id:'carrot',emoji:'🥕',name:'Carotte',cat:'veg',type:'veg',pts:3},
+  { id:'broc',emoji:'🥦', name:'Brocoli',cat:'veg',type:'veg',pts:3},
+  { id:'spinach',emoji:'🌿n', name:'Épinards',cat:'veg',type:'veg',pts:3},
+  { id:'avocado',emoji:'🥑', name:'Avocat',cat:'veg',type:'fat',pts:2},
+  { id:'rice',emoji:'🍚',name:'Riz',cat:'fec',type:'fec',pts:3},
+  { id:'pasta',emoji:'🍝',name:'Pâtes',cat:'fec',type:'fec',pts:2},
+  { id:'bread',emoji:'🍞', name:'Pain complet',cat:'fec',type:'fec',pts:1},
+  { id:'oats',emoji:'🌾',name:'Flocons d\'avoine',cat:'fec',type:'fec',pts:2},
+  { id:'lentil',emoji:'🫘',name:'Lentilles',cat:'fec',type:'fec',pts:2},
+  { id:'olive',emoji:'🫒', name:'Huile olive',cat:'fat',type:'fat',pu�:1},
+  { id:'nuts',emoji:'🥜',name:'Noix/Amandes',cat:'fat',type:'fat',pts:1},
+  { id:'hummus',emoji:'🫙',name:'Houmous',cat:'fat',type:'fat',pts:1},
+  { id:'banana',emoji:'🍌',name:'Banane',cat:'fruit',type:'fec',pts:1},
+  { id:'apple',emoji:'🍎', name:'Pomme',cat:'fruit',type:'fec',pts:1},
+  { id:'berry',emoji:'🍓',name:'Fruits rouges',cat:'fruit',type:'veg'(pts:2},
+];
+const CAT_LABELS = {prot:'Protứines',veg:'Légumes',fec:'Féculents',fat:'Graisses & Sauces',fruit:'Fruits'};
+const CAT_COLORS = {prot:w�{bg:'#1a3a1a',border:'#2a5a2a',text:'#6aaa6a'},veg:{bg:'#0f2a35',border:'#1a4a55',text:'#5a9aaa'},fec:{bg:'#2a2010',border:'#4a3a18',text:'#c8a84b'},fat:{bg:'#2a1a10',border:'#4a2a18',text:'#aa7a4a'},fruit:{bg:'#2a1520',border:'#4a2535',text:'#aa6a8a'}};
+let plate={},mealType='Petit-dåj',log=JSON.parse(localStorage.getItem('mc_log')||'{}'),waterData=JSON.parse(localStorage.getItem('mc_water')||''{}'');
+function today(){return new Date().toISOString().split('T')[0]}
+const DAYS=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],MONTHS=['jan','fév','mar','avr','mai','jun','jul','aoû','dep','oct','nov','déc'];
+function fmtDate(d){const dt=new Date(d+'T12:00');return DAYS[dt.getDay()]+' '+dt.getDate()+' '+MONTHS[dt.getMonth()]}
+document.getElementById('dateLabel').textContent=fmtDate(today());
+function setMealType(t,b){mealType=t;document.querySelectorAll('.meal-type-btn').forEach(x=>x.style.borderColor='');b.classList.add('active')}
+function showTab(n){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');event.target.classList.add('active');if(n==='journal')renderJournal();if(n==='water')renderWater()}
+function toggleFood(id){plate[id]=!plate[id];renderPlate();renderFoods()}
+function clearPlate(){plate={};renderPlate();renderFoods()}
+function renderPlate(){const el=document.getElementById('plateItems');const items=FOODS.filter(f=>plate[f.id]);if(!items.length){el.innerHTML='<span style="font-size:0.72rem;color:var(--muted);font-style:italic">Appuie sur un aliment pour l\'ajouter…</span>';['barProt','barVeg','barFec','barFat'].forEach(id=>document.getElementById(id).style.flex=0);document.getElementById('balanceNote').textContent='';document.getElementById('balanceAssess').innerHTML='';retur}el.innerHTML=items.map(f=>{const c=CAT_COLORS[f.cat];return `<div class="plate-item" style="background:${c.bg};border-color:${c.border};color:${c.text}" onclick="toggleFood('${f.id}')">${f.emoji} ${f.name} ✕</div>`}).join('');renderBalance(items)}
+function renderBalance(items){const c={prot:0,veg:0,fec:0,fat:0};items.forEach(f=>{c[f.type]=(c[f.type]||0)+1});['barProt','barVeg','barFec','barFat'].forEach((id,i)=>document.getElementById(id).style.flex=['prot','veg','fec','fat'][i]);const hP=c.prot>0,hV=c.veg>0,hFS=mealType==='Dîner'&&c.fec>0;const n=[],sc=(hP?1:0)+(hV?1:0)+(!hFS?1:0);if(!hP)n.push('❌ Pas de protứines');else n.push('✓'Protéines');if(!hV)n.push('❌ Pas de légumes');if(hFS)n.push('⚢뮟- Féculents le soir');document.getElementById('balanceNote').textContent=n.join(' · ');document.getElementById('balanceAssess').innerHTML=sc===3?'<span class="assess good">✒ Équilibré</span>':sc===2?'<span class="assess warn">~ À améliorer</span>':'<span class="assess bad">⚠�@ Déséquilibré</span>'}
+function renderFoods(){const el=document.getElementById('foodCats');el.innerHTML=['prot','veg','fec','fat','fruit'].map(cat=>{const foods=FOODS.filter(f=>f.cat===cat);return `<div class="cat-section"><div class="cat-title">${CAT_LABELS[cat]}</div><div class="food-grid">${foods.map(f=>`<div class="food-btn ${plate[f.id]?'in-plate':''}" onclick="toggleFood('${f.id}')"><span class="food-emoji">${f.emoji}</span><span class="food-name">${f.name}</span></div>`).join('')}</div></div>`}).join('')}
+function saveMeal(){const items=FOODS.filter(f=>plate[f.id]);if(!items.length){alert('Ajoute au moins un aliment.');return}const d=today();if(!log[d])log[d]=[];log[d].push({type:mealType,items:items.map(f=>f.id),time:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});localStorage.setItem('mc_log',JSON.stringify(log));plate={};renderPlate();renderFoods();const btn=document.querySelector('.save-btn');btn.textContent='✑ Enregistré!';setTimeout(()=>{bvn.textContent='✑ Enregistrer ce repas'},1500)}
+function renderJournal(){const el=document.getElementById('journalContent');const days=Object.keys(log).sort((a,b)=>b.localeCompare(a));if(!days.length){el.innerHTML='<div class="empty-log">Aucun repas enregistré encore.<br>Compose ton premier repas →</div>';return}el.innerHTML=days.slice(0,3).map(d=>`<div class="log-day"><div class="log-day-label">${fmtDate(d)}</div>${log[d].map((m,i)=>{const items=FOODS.filter(f=>m.items.includes(f.id));const hP=items.some(f=>f.type==='prot'),hV=items.some(f=>f.type==='veg');return `<div class="log-meal"><button class="log-meal-del" onclick="delMeal('${d}',${i})">✕</button><div class="log-meal-type">${m.type}${m.time?'· '+m.time:''}</div><div class="log-meal-items">${items.map(f=>f.emoji+' '+f.name).join(' · ')}</div></div>`;}).join('')}</div>`).join('')}
+function delMeal(d,i){log[d].splice(i,1);if(!log[d].length)delete log[d];localStorage.setItem('mc_log',JSON.stringify(log));renderJournal()}
+function renderWater(){const d=today();if(!waterData[d])waterData[d]=0;const cnt=waterData[d];document.getElementById('waterCount').textContent=cnt;document.getElementById('waterGlasses').innerHTML=Array.from({length:8},(_,i)=>`<span class="water-glass ${i<cnt?'filled':''}" onclick="toggleWater(${i})">💧</span>`).join('');document.getElementById('waterTarget').textContent=cnt>=8?'✓ Objectif atteint!':`Objectif : 8 verres = 1,6 L · ${8-cnt} verre${{8-cnt}>1?'s':''} restant${{8-cnt}>1?'s':''}`}
+function toggleWater(i){const d=today();waterData[d]=i<waterData[d]?i:i+1;localStorage.setItem('mc_water',JSON.stringify(waterData));renderWater()}
+renderFoods();renderPlate();
+</script></body></html>
