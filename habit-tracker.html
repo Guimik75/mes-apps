@@ -113,9 +113,9 @@
 </header>
 
 <nav>
-  <button class="active" onclick="showTab('today')">Aujourd'hui</button>
-  <button onclick="showTab('weight')">Poids</button>
-  <button onclick="showTab('history')">Historique</button>
+  <button class="active" onclick="showTab('today', this)">Aujourd'hui</button>
+  <button onclick="showTab('weight', this)">Poids</button>
+  <button onclick="showTab('history', this)">Historique</button>
 </nav>
 
 <div class="tab active" id="tab-today">
@@ -214,11 +214,11 @@ function calcScore(h) {
   return HABITS.reduce((s, hab) => s + (h[hab.id] ? hab.pts : 0), 0);
 }
 
-function showTab(name) {
+function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
-  event.target.classList.add('active');
+  btn.classList.add('active');
   if (name === 'history') renderHistory();
   if (name === 'weight') renderWeight();
 }
@@ -227,6 +227,7 @@ function renderHeader() {
   const d = new Date();
   const label = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
   document.getElementById('dayLabel').textContent = label;
+  // streak
   let streak = 0, dt = new Date();
   while(true) {
     dt.setDate(dt.getDate() - 1);
@@ -246,13 +247,28 @@ function renderToday() {
   document.getElementById('scoreCircle').style.strokeDashoffset = offset;
   const color = score >= 80 ? '#c8a84b' : score >= 60 ? '#5a8a5a' : score >= 40 ? '#4a6a8a' : '#6a5a4a';
   document.getElementById('scoreCircle').style.stroke = color;
+  
   const mot = motivations.find(([min]) => score >= min);
   document.getElementById('motivText').textContent = mot ? mot[1] : '';
+  
   const list = document.getElementById('habitList');
-  list.innerHTML = HABITS.map(h => `<div class="habit-item ${todayHabits[h.id] ? 'done' : ''}" onclick="toggleHabit('${h.id}')"><div class="habit-check">${todayHabits[h.id] ? '✓' : ''}</div><div class="habit-emoji">${h.emoji}</div><div class="habit-info"><div class="habit-name">${h.label}</div><div class="habit-pts">+${h.pts} pts</div></div></div>`).join('');
+  list.innerHTML = HABITS.map(h => `
+    <div class="habit-item ${todayHabits[h.id] ? 'done' : ''}" onclick="toggleHabit('${h.id}')">
+      <div class="habit-check">${todayHabits[h.id] ? '✓' : ''}</div>
+      <div class="habit-emoji">${h.emoji}</div>
+      <div class="habit-info">
+        <div class="habit-name">${h.label}</div>
+        <div class="habit-pts">+${h.pts} pts</div>
+      </div>
+    </div>
+  `).join('');
 }
 
-function toggleHabit(id) { todayHabits[id] = !todayHabits[id]; saveHabits(); renderToday(); }
+function toggleHabit(id) {
+  todayHabits[id] = !todayHabits[id];
+  saveHabits();
+  renderToday();
+}
 
 function renderWeight() {
   const latest = weights.length ? weights[weights.length-1].weight : START;
@@ -264,26 +280,84 @@ function renderWeight() {
   document.getElementById('wRemain').textContent = remain > 0 ? remain + ' kg' : '✓';
   document.getElementById('wProgress').style.width = pct + '%';
   document.getElementById('wProgressLabel').textContent = pct + '% de l\'objectif atteint';
+  renderWeightChart();
+}
+
+function renderWeightChart() {
   const svg = document.getElementById('weightChart');
-  if (weights.length < 2) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#4a3a2a" font-size="11">Pas encore assez de données</text>'; return; }
+  if (weights.length < 2) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#4a3a2a" font-size="11" font-family="DM Mono">Pas encore assez de données</text>'; return; }
   const W = svg.clientWidth || 300, H = 80;
   const vals = weights.map(w => w.weight);
   const min = Math.min(...vals) - 0.5, max = Math.max(...vals) + 0.5;
-  const pts = weights.map((w, i) => { const x = (i / (weights.length - 1)) * W; const y = H - ((w.weight - min) / (max - min)) * (H - 10) - 5; return `${x},${y}`; });
-  svg.innerHTML = `<polyline points="${pts.join(' ')}" fill="none" stroke="#c8a84b" stroke-width="2"/>${weights.map((w,i) => { const x = (i/(weights.length-1))*W, y=H-((w.weight-min)/(max-min))*(H-10)-5; return `<circle cx="${x}" cy="${y}" r="3" fill="#c8a84b"/>`; }).join('')}<line x1="0" y1="${H-((GOAL-min)/(max-min))*(H-10)-5}" x2="${W}" y2="${H-((GOAL-min)/(max-min))*(H-10)-5}" stroke="#5a8a5a" stroke-width="1" stroke-dasharray="4"/>`;
+  const pts = weights.map((w, i) => {
+    const x = (i / (weights.length - 1)) * W;
+    const y = H - ((w.weight - min) / (max - min)) * (H - 10) - 5;
+    return `${x},${y}`;
+  });
+  svg.innerHTML = `
+    <polyline points="${pts.join(' ')}" fill="none" stroke="#c8a84b" stroke-width="2" stroke-linejoin="round"/>
+    ${weights.map((w,i) => {
+      const x = (i/(weights.length-1))*W, y = H-((w.weight-min)/(max-min))*(H-10)-5;
+      return `<circle cx="${x}" cy="${y}" r="3" fill="#c8a84b"/>`;
+    }).join('')}
+    <line x1="0" y1="${H-((GOAL-min)/(max-min))*(H-10)-5}" x2="${W}" y2="${H-((GOAL-min)/(max-min))*(H-10)-5}" stroke="#5a8a5a" stroke-width="1" stroke-dasharray="4"/>
+  `;
 }
 
-function addWeight() { const v = parseFloat(document.getElementById('weightInput').value); if (isNaN(v) || v < 50 || v > 120) return; const entry = { date: today(), weight: v }; weights = [...weights.filter(w => w.date !== today()), entry].sort((a,b) => a.date.localeCompare(b.date)); save('gh_weights', weights); document.getElementById('weightInput').value = ''; renderWeight(); }
+function addWeight() {
+  const v = parseFloat(document.getElementById('weightInput').value);
+  if (isNaN(v) || v < 50 || v > 120) return;
+  const entry = { date: today(), weight: v };
+  weights = [...weights.filter(w => w.date !== today()), entry].sort((a,b) => a.date.localeCompare(b.date));
+  save('gh_weights', weights);
+  document.getElementById('weightInput').value = '';
+  renderWeight();
+}
 
 function renderHistory() {
   const bars = document.getElementById('weekBars');
   const list = document.getElementById('historyList');
+  
   const days7 = [];
-  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().split('T')[0]; const score = calcScore(habitHistory[key] || {}); days7.push({ key, score, day: DAYSAd.getDay()] }); }
-  bars.innerHTML = days7.map(({score, day}) => { const h = Math.max(4, score * 0.6); const color = score >= 80 ? '#c8a84b' : score >= 60 ? '#5a8a5a' : score >= 40 ? '#4a6a8a' : '#3a2e22'; return `<div class="week-bar"><div class="bar-score">${score || ''}</div><div class="bar-track"><div class="bar-fill" style="height:${h}px;background:${color}"></div></div><div class="bar-day">${day}</div></div>`; }).join('');
-  const allDays = Object.entries(habitHistory).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 30);
-  if (!allDays.length) { list.innerHTML = '<div class="empty-state">Aucun historique encore.<br>Commence � cocher tes habitudes.</div>'; return; }
-  list.innerHTML = allDays.map(([date, h]) => { const score = calcScore(h); const d = new Date(date + 'T12:00'); const label = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; const done = HABITS.filter(hab => h[hab.id]).map(hab => hab.emoji).join(''); return `<div class="history-row"><div><div class="history-date">${label}</div><div class="history-habits">${done || '—'}</div></div><div class="history-score">${score} pts</div></div>`; }).join('');
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    const score = calcScore(habitHistory[key] || {});
+    days7.push({ key, score, day: DAYS[d.getDay()] });
+  }
+  
+  bars.innerHTML = days7.map(({score, day}) => {
+    const h = Math.max(4, score * 0.6);
+    const color = score >= 80 ? '#c8a84b' : score >= 60 ? '#5a8a5a' : score >= 40 ? '#4a6a8a' : '#3a2e22';
+    return `<div class="week-bar">
+      <div class="bar-score">${score || ''}</div>
+      <div class="bar-track"><div class="bar-fill" style="height:${h}px;background:${color}"></div></div>
+      <div class="bar-day">${day}</div>
+    </div>`;
+  }).join('');
+  
+  const allDays = Object.entries(habitHistory)
+    .sort((a,b) => b[0].localeCompare(a[0]))
+    .slice(0, 30);
+  
+  if (!allDays.length) {
+    list.innerHTML = '<div class="empty-state">Aucun historique encore.<br>Commence à cocher tes habitudes.</div>';
+    return;
+  }
+  
+  list.innerHTML = allDays.map(([date, h]) => {
+    const score = calcScore(h);
+    const d = new Date(date + 'T12:00');
+    const label = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+    const done = HABITS.filter(hab => h[hab.id]).map(hab => hab.emoji).join('');
+    return `<div class="history-row">
+      <div>
+        <div class="history-date">${label}</div>
+        <div class="history-habits">${done || '—'}</div>
+      </div>
+      <div class="history-score">${score} pts</div>
+    </div>`;
+  }).join('');
 }
 
 renderHeader();
